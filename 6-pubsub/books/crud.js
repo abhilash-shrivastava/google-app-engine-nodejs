@@ -16,6 +16,13 @@
 const express = require('express');
 const images = require('../lib/images');
 const oauth2 = require('../lib/oauth2');
+// Imports the Google Cloud client libraries
+const Vision = require('@google-cloud/vision');
+
+// Instantiates clients
+const vision = Vision();
+
+const descriptions = ['animals', 'flowers', 'people'];
 
 function getModel () {
   return require(`./model-${require('../config').get('DATA_BACKEND')}`);
@@ -109,15 +116,42 @@ router.post(
     if (req.file && req.file.cloudStoragePublicUrl) {
       data.imageUrl = req.file.cloudStoragePublicUrl;
     }
-
-    // Save the data to the database.
-    getModel().create(data, true, (err, savedData) => {
-      if (err) {
-        next(err);
-        return;
-      }
-      res.redirect(`${req.baseUrl}/${savedData.id}`);
-    });
+    if (!data.description && req.file.cloudStoragePublicUrl) {
+      // Performs label detection on the gcs file
+      vision.labelDetection({ source: { imageUri: req.file.cloudStoragePublicUrl } })
+        .then((results) => {
+          const labels = results[0].labelAnnotations;
+          console.log('Labels:');
+          labels.forEach((label) => {
+            if (label.description && descriptions.indexOf(label.description) >= 0) {
+              data.description = label.description;
+            }
+          });
+          if (!data.description) {
+            data.description = 'others';
+          }
+          // Save the data to the database.
+          getModel().create(data, true, (err, savedData) => {
+            if (err) {
+              next(err);
+              return;
+            }
+            res.redirect(`${req.baseUrl}/${savedData.id}`);
+          });
+        })
+        .catch((err) => {
+          console.error('ERROR:', err);
+        });
+    }else {
+      // Save the data to the database.
+      getModel().create(data, true, (err, savedData) => {
+        if (err) {
+          next(err);
+          return;
+        }
+        res.redirect(`${req.baseUrl}/${savedData.id}`);
+      });
+    }
   }
 );
 // [END add]
