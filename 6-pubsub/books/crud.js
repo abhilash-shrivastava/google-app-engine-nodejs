@@ -22,7 +22,7 @@ const Vision = require('@google-cloud/vision');
 // Instantiates clients
 const vision = Vision();
 
-const descriptions = ['animals', 'flowers', 'people'];
+const descriptions = ['animal', 'flower', 'people'];
 
 function getModel () {
   return require(`./model-${require('../config').get('DATA_BACKEND')}`);
@@ -123,8 +123,17 @@ router.post(
           const labels = results[0].labelAnnotations;
           console.log('Labels:');
           labels.forEach((label) => {
-            if (label.description && descriptions.indexOf(label.description) >= 0) {
-              data.description = label.description;
+            console.log(label.description);
+            if (label.description) {
+              descriptions.forEach((description) => {
+                if (label.description.includes(description)){
+                  data.description = description;
+                  return;
+                }
+              })
+              if (data.description) {
+                return;
+              }
             }
           });
           if (!data.description) {
