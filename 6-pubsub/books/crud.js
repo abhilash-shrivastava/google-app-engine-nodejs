@@ -46,6 +46,7 @@ router.use((req, res, next) => {
  * Display a page of books (up to ten at a time).
  */
 router.get('/', (req, res, next) => {
+  console.log(1);
   getModel().list(10, req.query.pageToken, (err, entities, cursor) => {
     if (err) {
       next(err);
@@ -116,9 +117,9 @@ router.post(
     if (req.file && req.file.cloudStoragePublicUrl) {
       data.imageUrl = req.file.cloudStoragePublicUrl;
     }
-    if (!data.description && req.file.cloudStoragePublicUrl) {
+    if (!data.description && data.imageUrl) {
       // Performs label detection on the gcs file
-      vision.labelDetection({ source: { imageUri: req.file.cloudStoragePublicUrl } })
+      vision.labelDetection({ source: { imageUri: data.imageUrl } })
         .then((results) => {
           const labels = results[0].labelAnnotations;
           console.log('Labels:');
@@ -201,9 +202,9 @@ router.post(
     if (req.file && req.file.cloudStoragePublicUrl) {
       req.body.imageUrl = req.file.cloudStoragePublicUrl;
     }
-    if (!data.description && req.file.cloudStoragePublicUrl) {
+    if (!data.description && req.body.imageUrl) {
       // Performs label detection on the gcs file
-      vision.labelDetection({ source: { imageUri: req.file.cloudStoragePublicUrl } })
+      vision.labelDetection({ source: { imageUri: req.body.imageUrl } })
         .then((results) => {
           const labels = results[0].labelAnnotations;
           console.log('Labels:');
