@@ -2,9 +2,9 @@
   "GCLOUD_PROJECT": "cloud-890-nodejs",
   "DATA_BACKEND": "datastore",
   "CLOUD_BUCKET": "cloud-890-bucket",
-  "OAUTH2_CLIENT_ID": "552987407860-qdckjl1ostmuf7k1l5tcgc6kodvbcoub.apps.googleusercontent.com",
-  "OAUTH2_CLIENT_SECRET": "sCfLo6x2ULiF-5oFGio4fX5-",
-  "OAUTH2_CALLBACK": "https://cloud-python-890.appspot.com/auth/google/callback",
+  "OAUTH2_CLIENT_ID": "45242102269-5e3087npiqjkqfk342ehgucinp3l2379.apps.googleusercontent.com",
+  "OAUTH2_CLIENT_SECRET": "nHjSunX3vFM0PBBH-sDUsCKa",
+  "OAUTH2_CALLBACK": "http://localhost:8080/auth/google/callback",
   "MEMCACHE_URL": "redis-15008.c11.us-east-1-2.ec2.cloud.redislabs.com:15008",
   "TOPIC_NAME": "cloud-890-topic",
   "SUBSCRIPTION_NAME": "cloud-890-subscription"
