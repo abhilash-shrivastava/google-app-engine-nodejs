@@ -176,6 +176,7 @@ router.get('/:book/edit', (req, res, next) => {
       next(err);
       return;
     }
+    entity.description = null;
     res.render('books/form.pug', {
       book: entity,
       action: 'Edit'
@@ -200,14 +201,51 @@ router.post(
     if (req.file && req.file.cloudStoragePublicUrl) {
       req.body.imageUrl = req.file.cloudStoragePublicUrl;
     }
-
-    getModel().update(req.params.book, data, true, (err, savedData) => {
-      if (err) {
-        next(err);
-        return;
-      }
-      res.redirect(`${req.baseUrl}/${savedData.id}`);
-    });
+    if (!data.description && req.file.cloudStoragePublicUrl) {
+      // Performs label detection on the gcs file
+      vision.labelDetection({ source: { imageUri: req.file.cloudStoragePublicUrl } })
+        .then((results) => {
+          const labels = results[0].labelAnnotations;
+          console.log('Labels:');
+          labels.forEach((label) => {
+            console.log(label.description);
+            if (label.description) {
+              descriptions.forEach((description) => {
+                if (label.description.includes(description)){
+                  data.description = description;
+                  return;
+                }
+              })
+              if (data.description) {
+                return;
+              }
+            }
+          });
+          if (!data.description) {
+            data.description = 'others';
+          }
+          // Save the data to the database.
+          getModel().update(req.params.book, data, true, (err, savedData) => {
+            if (err) {
+              next(err);
+              return;
+            }
+            res.redirect(`${req.baseUrl}/${savedData.id}`);
+          });
+        })
+        .catch((err) => {
+          console.error('ERROR:', err);
+        });
+    }else {
+      // Save the data to the database.
+      getModel().update(req.params.book, data, true, (err, savedData) => {
+        if (err) {
+          next(err);
+          return;
+        }
+        res.redirect(`${req.baseUrl}/${savedData.id}`);
+      });
+    }
   }
 );
 
